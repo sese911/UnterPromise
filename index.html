@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <!-- добавим стили mocha для отображения результатов -->
+  <link rel="stylesheet" href="./lib/mocha-7.1.1.css">
+  <!-- добавляем сам фреймворк mocha -->
+  <script src="./lib/mocha-7.1.1.js"></script>
+  <!-- добавим chai -->
+  <script src="./lib/chai-4.2.0.js"></script>
+
+  <script>
+    // chai предоставляет большое количество функций. Объявим assert глобально
+    let assert = chai.assert;
+    // включаем режим тестирования в стиле BDD
+    mocha.setup('bdd');
+  </script>
+</head>
+
+<body>
+
+  <!-- скрипт с реализацией тестируемого класса --> 
+  <script src="UnterPromise.js"></script>
+
+  <!-- скрипт со спецификацией (describe, it...) -->
+  <script src="test.js"></script>
+
+  <!-- элемент с id="mocha" будет содержать результаты тестов -->
+  <div id="mocha"></div>
+
+  <!-- стаааррррртуем! -->
+  <script>
+    mocha.run();
+  </script>
+
+</body>
+
+</html>
