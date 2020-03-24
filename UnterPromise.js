@@ -2,6 +2,7 @@ class UnterPromise {
     constructor(executor) {
         this._status = "pending";
         this._result;
+        this._onResolveQueue = [];
 
         if (typeof executor === "function") {
             executor(value => this._resolve(value), error => this._reject(error));
@@ -15,6 +16,14 @@ class UnterPromise {
         if (this._status === "pending") {
             this._status = "fulfilled";
             this._result = value;
+
+            this._runOnResolveHandlers();
+        }
+    }
+
+    _runOnResolveHandlers() {
+        while(this._onResolveQueue.length > 0) {
+            this._onResolveQueue.shift()(this._result);
         }
     }
 
@@ -25,5 +34,10 @@ class UnterPromise {
         }
     }
 
+    then(onResolve) {
+        this._onResolveQueue.push(onResolve);
+
+        if(this._status === "fulfilled") this._runOnResolveHandlers();
+    }
     
 }
