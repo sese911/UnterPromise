@@ -55,3 +55,56 @@ describe("Тесты конструктора класса UnterPromise", functi
         assert.equal(promise._status, "fulfilled");
     });
 });
+
+describe("Тесты метода .then", function() {
+
+    it("Метод .then принимает первым аргументом функцию, которая должна быть вызвана при разрешении промиса с результатом промиса в качастве аргумента", function(done) {
+        let testValue = "foo";
+
+        new UnterPromise(resolve => {
+            setTimeout(() => resolve(testValue), 100);
+        })
+        .then(value => {
+            assert.equal(value, testValue);
+            done();
+        });
+    });
+
+    it("Одному промису можно присвоить несколько обработчиков разрешения и все они должны выполниться", function(done) {
+        let testValue = "foo";
+        let result_1, result_2, result_3;
+
+        let promise = new UnterPromise(resolve => {
+            setTimeout(() => resolve(testValue), 100);
+        });
+        promise.then(value => {
+            result_1 = value;
+        });
+        promise.then(value => {
+            result_2 = value;
+        });
+        promise.then(value => {
+            result_3 = value;
+
+            assert.equal(result_1, testValue);
+            assert.equal(result_2, testValue);
+            assert.equal(result_3, testValue);
+            done();
+        });
+    });
+
+    it("Если .then вызван на уже разрешенном промисе, обработчик разрешения должен исполниться немедленно", function(done) {
+        let testValue = "foo";
+
+        let promise = new UnterPromise(resolve => {
+            setTimeout(() => resolve(testValue), 100);
+        });
+        setTimeout(() => {
+            promise.then(value => {
+                assert.equal(value, testValue);
+                done();
+            });
+        }, 200);
+    });
+    
+});
