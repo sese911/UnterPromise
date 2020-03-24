@@ -3,6 +3,7 @@ class UnterPromise {
         this._status = "pending";
         this._result;
         this._onResolveQueue = [];
+        this._onRejectQueue  = [];
 
         if (typeof executor === "function") {
             executor(value => this._resolve(value), error => this._reject(error));
@@ -31,13 +32,23 @@ class UnterPromise {
         if (this._status === "pending") {
             this._status = "rejected";
             this._result = error;
+
+            this._runOnRejectHandlers();
         }
     }
 
-    then(onResolve) {
+    _runOnRejectHandlers() {
+        while(this._onRejectQueue.length > 0) {
+            this._onRejectQueue.shift()(this._result);
+        }
+    }
+
+    then(onResolve, onReject) {
         this._onResolveQueue.push(onResolve);
+        this._onRejectQueue.push(onReject);
 
         if(this._status === "fulfilled") this._runOnResolveHandlers();
+        if(this._status === "rejected") this._runOnRejectHandlers();
     }
     
 }
