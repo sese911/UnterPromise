@@ -106,5 +106,54 @@ describe("Тесты метода .then", function() {
             });
         }, 200);
     });
+
+    it("Метод .then принимает вторым аргументом функцию, которая должна быть вызвана при отклонении промиса с результатом промиса в качастве аргумента", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        })
+        .then(null, error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Одному промису можно присвоить несколько обработчиков отклонения и все они должны выполниться", function(done) {
+        let testError = "foo";
+        let result_1, result_2, result_3;
+
+        let promise = new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        });
+        promise.then(null, error => {
+            result_1 = error;
+        });
+        promise.then(null, error => {
+            result_2 = error;
+        });
+        promise.then(null, error => {
+            result_3 = error;
+
+            assert.equal(result_1, testError);
+            assert.equal(result_2, testError);
+            assert.equal(result_3, testError);
+            done();
+        });
+    });
+
+    it("Если .then вызван на уже отклоненном промисе, обработчик отклонения должен исполниться немедленно", function(done) {
+        let testError = "foo";
+
+        let promise = new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        });
+        setTimeout(() => {
+            promise.then(null, error => {
+                assert.equal(error, testError);
+                done();
+            });
+        }, 200);
+    });
     
 });
