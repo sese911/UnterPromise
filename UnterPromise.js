@@ -19,7 +19,8 @@ class UnterPromise {
         this._status = "pending";
         this._result;
         this._onResolveQueue = [];
-        this._onRejectQueue = [];
+        this._onRejectQueue  = [];
+        this._onFinallyQueue = [];
 
         if (typeof executor === "function") {
             executor(value => this._resolve(value), error => this._reject(error));
@@ -35,6 +36,7 @@ class UnterPromise {
             this._result = value;
 
             this._runOnResolveHandlers();
+            this._runOnFinallyHandlers();
         }
     }
 
@@ -78,6 +80,8 @@ class UnterPromise {
                 this._runOnRejectHandlers();
             else
                 this._cancelOnResolveHandlers();
+
+            this._runOnFinallyHandlers();    
         }
     }
 
@@ -101,6 +105,42 @@ class UnterPromise {
                 );
             } else {
                 rejectHandlerObj.unterPromise._resolve(returnValue);
+            }
+        }
+    }
+
+    _runOnFinallyHandlers() {
+        while(this._onFinallyQueue.length > 0) {
+            let finallyHandlerObj = this._onFinallyQueue.shift();
+            let returnValue;
+
+            try {
+                returnValue = finallyHandlerObj.onFinallyHandler();
+            }
+            catch(error) {
+                finallyHandlerObj.unterPromise._reject(error);
+                break;
+            }
+
+            if (returnValue instanceof UnterPromise) {
+                returnValue.then(
+                    () => {
+                        if (this._status === "fulfilled") {
+                            finallyHandlerObj.unterPromise._resolve(this._result);
+                        } else {
+                            finallyHandlerObj.unterPromise._reject(this._result);
+                        }                        
+                    },
+                    () => {
+                        finallyHandlerObj.unterPromise._reject(returnValue._result);
+                    }
+                );
+            } else {
+                if (this._status === "fulfilled") {
+                    finallyHandlerObj.unterPromise._resolve(this._result);
+                } else {
+                    finallyHandlerObj.unterPromise._reject(this._result);
+                }
             }
         }
     }
@@ -131,5 +171,16 @@ class UnterPromise {
     catch(onReject) {
         return this.then(undefined, onReject);       
     }
-    
+
+    finally(onFinally) {
+        let newUnterPromis = new UnterPromise(() => {});
+
+        if(typeof onFinally === "function") {
+            this._onFinallyQueue.push({ onFinallyHandler: onFinally, unterPromise: newUnterPromis} );
+        }
+
+        if (this._status !== "pending") this._runOnFinallyHandlers();
+
+        return newUnterPromis;
+    }    
 }
