@@ -23,38 +23,44 @@ describe(`Тесты конструктора класса ${TestingClass.name}`
         assert.equal(testValue, "foo");
     });
 
-    it.skip("Конструктор передает экзекьютеру в качестве аргументов внутренние методы промиса, изменяющие сосотояние промиса и присваивающие переданный им аргумент результату промиса", function() {
+    it("Конструктор передает экзекьютеру в качестве аргументов внутренние методы промиса, изменяющие сосотояние промиса и присваивающие переданный им аргумент результату промиса", function(done) {
         let testValue = "foo";
         let testError = new Error("Тестовая ошибка!");
-        let resolvedPromise = new TestingClass(resolve => {
+
+        new TestingClass(resolve => {
             assert.typeOf(resolve, "function");
             resolve(testValue);
+        })
+        .then(value => {
+            assert.equal(value, testValue);
         });
-        let rejectedPromise = new TestingClass((resolve, reject) => {
+
+        new TestingClass((resolve, reject) => {
             assert.typeOf(reject, "function");
             reject(testError);
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
         });
-        
-        assert.equal(resolvedPromise._status, "fulfilled");
-        assert.equal(resolvedPromise._result, testValue);
-        assert.equal(rejectedPromise._status, "rejected");
-        assert.equal(rejectedPromise._result, testError);
     });
 
-    it.skip("Статус промиса изменяется только один раз, последующие попытки разрешить или отклонить промис игнорирутся", function() {
+    it("Статус промиса изменяется только один раз, последующие попытки разрешить или отклонить промис игнорирутся", function(done) {
 
         let testValue_1 = "foo";
         let testValue_2 = "bar";
         let testError = new Error("Тестовая ошибка!");
 
-        let promise = new TestingClass((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             resolve(testValue_1);
             resolve(testValue_2);
             reject(testError);
+        })
+        .then(value => {
+            assert.equal(value, testValue_1);
+            done();
         });
 
-        assert.equal(promise._result, testValue_1);
-        assert.equal(promise._status, "fulfilled");
     });
 });
 
