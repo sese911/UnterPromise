@@ -1,10 +1,12 @@
-describe("Тесты конструктора класса UnterPromise", function() {
+let TestingClass = UnterPromise;
+
+describe(`Тесты конструктора класса ${TestingClass.name}`, function() {
 
     it("Конструктор в качестве аргумента принимает функцию, иначе выбрасываем TypeError", function() {
         let testError;
 
         try {
-            new UnterPromise();
+            new TestingClass();
         }
         catch (error) {
             testError = error;
@@ -16,19 +18,19 @@ describe("Тесты конструктора класса UnterPromise", functi
     it("Переданная функция немедленно вызывается в конструкторе", function() {
         let testValue;
 
-        new UnterPromise(() => testValue = "foo");
+        new TestingClass(() => testValue = "foo");
 
         assert.equal(testValue, "foo");
     });
 
-    it("Конструктор передает экзекьютеру в качестве аргументов внутренние методы промиса, изменяющие сосотояние промиса и присваивающие переданный им аргумент результату промиса", function() {
+    it.skip("Конструктор передает экзекьютеру в качестве аргументов внутренние методы промиса, изменяющие сосотояние промиса и присваивающие переданный им аргумент результату промиса", function() {
         let testValue = "foo";
         let testError = new Error("Тестовая ошибка!");
-        let resolvedPromise = new UnterPromise(resolve => {
+        let resolvedPromise = new TestingClass(resolve => {
             assert.typeOf(resolve, "function");
             resolve(testValue);
         });
-        let rejectedPromise = new UnterPromise((resolve, reject) => {
+        let rejectedPromise = new TestingClass((resolve, reject) => {
             assert.typeOf(reject, "function");
             reject(testError);
         });
@@ -39,13 +41,13 @@ describe("Тесты конструктора класса UnterPromise", functi
         assert.equal(rejectedPromise._result, testError);
     });
 
-    it("Статус промиса изменяется только один раз, последующие попытки разрешить или отклонить промис игнорирутся", function() {
+    it.skip("Статус промиса изменяется только один раз, последующие попытки разрешить или отклонить промис игнорирутся", function() {
 
         let testValue_1 = "foo";
         let testValue_2 = "bar";
         let testError = new Error("Тестовая ошибка!");
 
-        let promise = new UnterPromise((resolve, reject) => {
+        let promise = new TestingClass((resolve, reject) => {
             resolve(testValue_1);
             resolve(testValue_2);
             reject(testError);
@@ -61,7 +63,7 @@ describe("Тесты метода .then", function() {
     it("Метод .then принимает первым аргументом функцию, которая должна быть вызвана при разрешении промиса с результатом промиса в качастве аргумента", function(done) {
         let testValue = "foo";
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(testValue), 100);
         })
         .then(value => {
@@ -74,7 +76,7 @@ describe("Тесты метода .then", function() {
         let testValue = "foo";
         let result_1, result_2, result_3;
 
-        let promise = new UnterPromise(resolve => {
+        let promise = new TestingClass(resolve => {
             setTimeout(() => resolve(testValue), 100);
         });
         promise.then(value => {
@@ -96,7 +98,7 @@ describe("Тесты метода .then", function() {
     it("Если .then вызван на уже разрешенном промисе, обработчик разрешения должен исполниться немедленно", function(done) {
         let testValue = "foo";
 
-        let promise = new UnterPromise(resolve => {
+        let promise = new TestingClass(resolve => {
             setTimeout(() => resolve(testValue), 100);
         });
         setTimeout(() => {
@@ -110,7 +112,7 @@ describe("Тесты метода .then", function() {
     it("Метод .then принимает вторым аргументом функцию, которая должна быть вызвана при отклонении промиса с результатом промиса в качестве аргумента", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         })
         .then(null, error => {
@@ -123,7 +125,7 @@ describe("Тесты метода .then", function() {
         let testError = new Error("Тестовая ошибка!");
         let result_1, result_2, result_3;
 
-        let promise = new UnterPromise((resolve, reject) => {
+        let promise = new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         });
         promise.then(null, error => {
@@ -145,7 +147,7 @@ describe("Тесты метода .then", function() {
     it("Если .then вызван на уже отклоненном промисе, обработчик отклонения должен исполниться немедленно", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        let promise = new UnterPromise((resolve, reject) => {
+        let promise = new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         });
         setTimeout(() => {
@@ -160,7 +162,7 @@ describe("Тесты метода .then", function() {
         let onResolveCalled = false;
         let onRejectCalled  = false;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {})
@@ -168,7 +170,7 @@ describe("Тесты метода .then", function() {
             onResolveCalled = true;
         });
         
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 200);
         })
         .then(null, () => {})
@@ -184,7 +186,7 @@ describe("Тесты метода .then", function() {
     it("Если обработчик, переданный методу .then, возвращает значение, то промис созданный методом .then разрешается с этим значением", function(done) {
         let testValue = "foobar";
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve("foo"), 100);
         })
         .then(value => {
@@ -199,7 +201,7 @@ describe("Тесты метода .then", function() {
     it("Если обработчик, переданный методу .then, возвращает undefined, то промис созданный методом .then разрешается со значением undefined", function(done) {
         let testValue;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve("foo"), 100);
         })
         .then(() => {
@@ -215,7 +217,7 @@ describe("Тесты метода .then", function() {
         let testError = Error("Тестовая ошибка!");
         let result_1, result_2;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {
@@ -225,7 +227,7 @@ describe("Тесты метода .then", function() {
             result_1 = error;
         });
         
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .then(null, () => {
@@ -244,21 +246,21 @@ describe("Тесты метода .then", function() {
         let testValue = "foo";
         let result_1, result_2;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {
-            return new UnterPromise(resolve => resolve(testValue));
+            return new TestingClass(resolve => resolve(testValue));
         })
         .then(value => {
             result_1 = value;
         });
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .then(null, () => {
-            return new UnterPromise(resolve => resolve(testValue));
+            return new TestingClass(resolve => resolve(testValue));
         })
         .then(value => {
             result_2 = value;
@@ -273,21 +275,21 @@ describe("Тесты метода .then", function() {
         let testError = new Error("Тестовая ошибка!");
         let result_1, result_2;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {
-            return new UnterPromise((resolve, reject) => reject(testError));
+            return new TestingClass((resolve, reject) => reject(testError));
         })
         .then(null, error => {
             result_1 = error;
         });
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .then(null, () => {
-            return new UnterPromise((resolve, reject) => reject(testError));
+            return new TestingClass((resolve, reject) => reject(testError));
         })
         .then(null, error => {
             result_2 = error;
@@ -302,11 +304,11 @@ describe("Тесты метода .then", function() {
         let testValue = "foo";
         let result_1, result_2;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {
-            return new UnterPromise(resolve => {
+            return new TestingClass(resolve => {
                 setTimeout(() => resolve(testValue), 100);
             });
         })
@@ -314,11 +316,11 @@ describe("Тесты метода .then", function() {
             result_1 = value;
         });
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .then(null, () => {
-            return new UnterPromise(resolve => {
+            return new TestingClass(resolve => {
                 setTimeout(() => resolve(testValue), 100);
             });
         })
@@ -335,11 +337,11 @@ describe("Тесты метода .then", function() {
         let testError = new Error("Тестовая ошибка!");
         let result_1, result_2;
 
-        new UnterPromise(resolve => {
+        new TestingClass(resolve => {
             setTimeout(() => resolve(), 100);
         })
         .then(() => {
-            return new UnterPromise((resolve, reject) => {
+            return new TestingClass((resolve, reject) => {
                 setTimeout(reject(testError), 100);
             });
         })
@@ -347,11 +349,11 @@ describe("Тесты метода .then", function() {
             result_1 = error;
         });
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .then(null, () => {
-            return new UnterPromise((resolve, reject) => {
+            return new TestingClass((resolve, reject) => {
                 setTimeout(reject(testError), 100);
             });
         })
@@ -368,13 +370,13 @@ describe("Тесты метода .then", function() {
         let testError = new Error("Тестовая ошибка!");
         let testValue = "foo";
     
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         })
         .then(() => {})
         .then(() => {}, error => {
             assert.equal(error, testError)            
-            return new UnterPromise(resolve => {
+            return new TestingClass(resolve => {
                 setTimeout(() => resolve(testValue), 100);
             });
         })
@@ -390,7 +392,7 @@ describe("Тесты метода .catch", function() {
     it("Метод .catch принимает в качестве аргумента функцию, которая должна быть вызвана при отклонении промиса с результатом промиса в качестве аргумента", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         })
         .catch(error => {
@@ -403,7 +405,7 @@ describe("Тесты метода .catch", function() {
         let testError = new Error("Тестовая ошибка!");
         let result_1, result_2, result_3;
 
-        let promise = new UnterPromise((resolve, reject) => {
+        let promise = new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         });
         promise.catch(error => {
@@ -425,7 +427,7 @@ describe("Тесты метода .catch", function() {
     it("Если .catch вызван на уже отклоненном промисе, обработчик отклонения должен исполниться немедленно", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        let promise = new UnterPromise((resolve, reject) => {
+        let promise = new TestingClass((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
         });
         setTimeout(() => {
@@ -439,7 +441,7 @@ describe("Тесты метода .catch", function() {
     it("Метод .catch возвращает новый промис, который разрешится когда будет вызван обработчик полученный методом .catch", function(done) {
         let onResolveCalled  = false;
         
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {})
@@ -453,7 +455,7 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, возвращает значение, то промис созданный методом .catch разрешается с этим значением", function(done) {
         let testValue = "foo";
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
@@ -466,7 +468,7 @@ describe("Тесты метода .catch", function() {
     });
 
     it("Если обработчик, переданный методу .catch, возвращает undefined, то промис созданный методом .catch разрешается со значением undefined", function(done) {
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
@@ -481,7 +483,7 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, выдает ошибку, то промис созданный методом .catch отклоняется со значением выданной ошибки", function(done) {
         let testError = Error("Тестовая ошибка!");
         
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
@@ -496,11 +498,11 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, возвращает разрешенный промис, то промис созданный методом .catch разрешается со значением промиса возвращенного обработчиком", function(done) {
         let testValue = "foo";
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
-            return UnterPromise.resolve(testValue);
+            return TestingClass.resolve(testValue);
         })
         .then(value => {
             assert.equal(value, testValue);
@@ -511,11 +513,11 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, возвращает отклоненный промис, то промис созданный методом .catch отклоняется со значением промиса возвращенного обработчиком", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
-            return UnterPromise.reject(testError);
+            return TestingClass.reject(testError);
         })
         .catch(error => {
             assert.equal(error, testError);
@@ -526,11 +528,11 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, возвращает промис в состоянии ожидания, то промис созданный методом .catch разрешается со значением промиса возвращенного обработчиком как только тот разрешится", function(done) {
         let testValue = "foo";
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
-            return new UnterPromise(resolve => {
+            return new TestingClass(resolve => {
                 setTimeout(() => resolve(testValue), 100);
             });
         })
@@ -543,11 +545,11 @@ describe("Тесты метода .catch", function() {
     it("Если обработчик, переданный методу .catch, возвращает промис в состоянии ожидания, то промис созданный методом .catch отклоняется со значением промиса возвращенного обработчиком как только тот отклонится", function(done) {
         let testError = new Error("Тестовая ошибка!");
 
-        new UnterPromise((resolve, reject) => {
+        new TestingClass((resolve, reject) => {
             setTimeout(() => reject(), 100);
         })
         .catch(() => {
-            return new UnterPromise((resolve, reject) => {
+            return new TestingClass((resolve, reject) => {
                 setTimeout(reject(testError), 100);
             });
         })
@@ -558,13 +560,163 @@ describe("Тесты метода .catch", function() {
     });
 });
 
-describe("Тесты статических методов класса UnterPromise", function() {
+describe("Тесты метода .finally", function() {
+    
+    it("Метод .finally принимает в качестве аргумента функцию, которая должна быть вызвана при разрешении или отклонении промиса", function(done) {
+        let onResolveCalled = false;
+        let onRejectCalled  = false;
+
+        new TestingClass(resolve => {
+            setTimeout(() => resolve(), 100);
+        })
+        .finally(() => {
+            onResolveCalled = true;
+        });
+
+        new TestingClass((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .finally(() => {
+            onRejectCalled = true;
+
+            assert.isTrue(onResolveCalled);
+            assert.isTrue(onRejectCalled);
+            done();
+        });
+    });
+
+    it("Одному промису можно присвоить несколько обработчиков finally и все они должны выполниться", function(done) {
+        let testValue = "foo";
+        let result_1, result_2, result_3, result_4;
+
+        let resolvedPromise = new TestingClass(resolve => {
+            setTimeout(() => resolve(), 100);
+        });
+        resolvedPromise.finally(() => {
+            result_1 = testValue;
+        });
+        resolvedPromise.finally(() => {
+            result_2 = testValue;
+        });
+
+        let rejectedPromise = new TestingClass((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        });
+        rejectedPromise.finally(() => {
+            result_3 = testValue;
+        });
+        rejectedPromise.finally(() => {
+            result_4 = testValue;
+
+            assert.equal(result_1, testValue);
+            assert.equal(result_2, testValue);
+            assert.equal(result_3, testValue);
+            assert.equal(result_4, testValue);
+            done();
+        });
+    });
+
+    it("Если .finally вызван на уже разрешенном или отклоненном промисе, обработчик должен исполниться немедленно", function(done) {
+        let onResolveCalled = false;
+        let onRejectCalled  = false;
+
+        TestingClass.resolve()
+        .finally(() => {
+            onResolveCalled = true;
+        });
+
+        TestingClass.reject()
+        .finally(() => {
+            onRejectCalled = true;
+
+            assert.isTrue(onResolveCalled);
+            assert.isTrue(onRejectCalled);
+            done();
+        });
+    });
+
+    it("Обработчик переданный в метод .finally при своем исполнении не должен получать никаких аргументов", function(done) {
+        new TestingClass(resolve => {
+            setTimeout(() => resolve("foo"), 100);
+        })
+        .finally(value => {
+            assert.isUndefined(value);
+        });
+
+        new TestingClass((resolve, reject) => {
+            setTimeout(() => reject(new Error("Какая-то ошибка!")), 100);
+        })
+        .finally(value => {
+            assert.isUndefined(value);
+            done();
+        })
+        .catch(() => {});
+    });
+
+    it("Метод .finally возвращает новый промис, который разрешится или отклонится когда будет вызван обработчик полученный методом .finally. Этот промис должен разрешится или отклонится со значением и статусом, с которым был разрешен или отклонен промис на котором был вызван метод .finally", function(done) {
+        let testValue = "foo";
+        let testError = new Error("Тестовая ошибка!");
+        
+        new TestingClass(resolve => {
+            setTimeout(() => resolve(testValue), 100);
+        })
+        .finally(() => {}) // Должен вернуть разрешенный промис со значением testValue
+        .then(value => {
+            assert.equal(value, testValue);
+        });
+        
+        new TestingClass((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        })
+        .finally(() => { // Должен вернуть отклоненный промис со значением testError
+            return TestingClass.resolve(testValue);
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .finally, выдает ошибку, то промис созданный методом .finally отклоняется со значением этой ошибки", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new TestingClass(resolve => {
+            setTimeout(() => resolve(), 100);
+        })
+        .finally(() => {
+            throw testError;
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .finally, возвращает отклоненный промис, то промис созданный методом .finally отклоняется со значением этого промиса", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new TestingClass(resolve => {
+            setTimeout(() => resolve(), 100);
+        })
+        .finally(() => {
+            return new TestingClass((resolve, reject) => {
+                setTimeout(() => reject(testError), 100);
+            });
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+});
+
+describe(`Тесты статических методов класса ${TestingClass.name}`, function() {
 
     it("Статический метод resolve возвращает промис, разрешенный с переданным в метод аргументом", function() {
 
         let testValue = "foo";
 
-        UnterPromise.resolve(testValue)
+        TestingClass.resolve(testValue)
         .then(value => {
             assert.equal(value, testValue);
         });
@@ -574,7 +726,7 @@ describe("Тесты статических методов класса UnterPro
 
         let testError = new Error("Тестовая ошибка!");
 
-        UnterPromise.reject(testError)
+        TestingClass.reject(testError)
         .then(null, error => {
             assert.equal(error, testError);
         });
