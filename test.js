@@ -120,7 +120,7 @@ describe("Тесты метода .then", function() {
     });
 
     it("Одному промису можно присвоить несколько обработчиков отклонения и все они должны выполниться", function(done) {
-        let testError = "foo";
+        let testError = new Error("Тестовая ошибка!");
         let result_1, result_2, result_3;
 
         let promise = new UnterPromise((resolve, reject) => {
@@ -143,7 +143,7 @@ describe("Тесты метода .then", function() {
     });
 
     it("Если .then вызван на уже отклоненном промисе, обработчик отклонения должен исполниться немедленно", function(done) {
-        let testError = "foo";
+        let testError = new Error("Тестовая ошибка!");
 
         let promise = new UnterPromise((resolve, reject) => {
             setTimeout(() => reject(testError), 100);
@@ -362,7 +362,200 @@ describe("Тесты метода .then", function() {
             assert.equal(result_2, testError);
             done();
         });
-    });    
+    }); 
+
+    it("Если промис был отклонен, то все промисы созданные вызванными на нем методами .then с обработчиками разрешения, но без обработчиков отклонения, также должны быть отклонены", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+        let testValue = "foo";
+    
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        })
+        .then(() => {})
+        .then(() => {}, error => {
+            assert.equal(error, testError)            
+            return new UnterPromise(resolve => {
+                setTimeout(() => resolve(testValue), 100);
+            });
+        })
+        .then(value => {
+            assert.equal(value, testValue);
+            done();
+        });
+    });  
+});
+
+describe("Тесты метода .catch", function() {
+
+    it("Метод .catch принимает в качестве аргумента функцию, которая должна быть вызвана при отклонении промиса с результатом промиса в качестве аргумента", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Одному промису можно присвоить несколько обработчиков отклонения и все они должны выполниться", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+        let result_1, result_2, result_3;
+
+        let promise = new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        });
+        promise.catch(error => {
+            result_1 = error;
+        });
+        promise.catch(error => {
+            result_2 = error;
+        });
+        promise.catch(error => {
+            result_3 = error;
+
+            assert.equal(result_1, testError);
+            assert.equal(result_2, testError);
+            assert.equal(result_3, testError);
+            done();
+        });
+    });
+
+    it("Если .catch вызван на уже отклоненном промисе, обработчик отклонения должен исполниться немедленно", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        let promise = new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(testError), 100);
+        });
+        setTimeout(() => {
+            promise.catch(error => {
+                assert.equal(error, testError);
+                done();
+            });
+        }, 200);
+    });
+
+    it("Метод .catch возвращает новый промис, который разрешится когда будет вызван обработчик полученный методом .catch", function(done) {
+        let onResolveCalled  = false;
+        
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {})
+        .then(value => {
+            onResolveCalled = true;
+            assert.isTrue(onResolveCalled);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает значение, то промис созданный методом .catch разрешается с этим значением", function(done) {
+        let testValue = "foo";
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            return testValue;
+        })
+        .then(value => {
+            assert.equal(value, testValue);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает undefined, то промис созданный методом .catch разрешается со значением undefined", function(done) {
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            // ничего не возвращает
+        })
+        .then(value => {
+            assert.equal(value, undefined);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, выдает ошибку, то промис созданный методом .catch отклоняется со значением выданной ошибки", function(done) {
+        let testError = Error("Тестовая ошибка!");
+        
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            throw testError;
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает разрешенный промис, то промис созданный методом .catch разрешается со значением промиса возвращенного обработчиком", function(done) {
+        let testValue = "foo";
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            return UnterPromise.resolve(testValue);
+        })
+        .then(value => {
+            assert.equal(value, testValue);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает отклоненный промис, то промис созданный методом .catch отклоняется со значением промиса возвращенного обработчиком", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            return UnterPromise.reject(testError);
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает промис в состоянии ожидания, то промис созданный методом .catch разрешается со значением промиса возвращенного обработчиком как только тот разрешится", function(done) {
+        let testValue = "foo";
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            return new UnterPromise(resolve => {
+                setTimeout(() => resolve(testValue), 100);
+            });
+        })
+        .then(value => {
+            assert.equal(value, testValue);
+            done();
+        });
+    });
+
+    it("Если обработчик, переданный методу .catch, возвращает промис в состоянии ожидания, то промис созданный методом .catch отклоняется со значением промиса возвращенного обработчиком как только тот отклонится", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new UnterPromise((resolve, reject) => {
+            setTimeout(() => reject(), 100);
+        })
+        .catch(() => {
+            return new UnterPromise((resolve, reject) => {
+                setTimeout(reject(testError), 100);
+            });
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
+    });
 });
 
 describe("Тесты статических методов класса UnterPromise", function() {
