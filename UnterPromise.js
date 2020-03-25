@@ -62,12 +62,22 @@ class UnterPromise {
         }
     }
 
+    _cancelOnResolveHandlers() {
+        while(this._onResolveQueue.length > 0) {
+            let resolveHandlerObj = this._onResolveQueue.shift();
+            resolveHandlerObj.unterPromise._reject(this._result);
+        }
+    }
+
     _reject(error) {
         if (this._status === "pending") {
             this._status = "rejected";
             this._result = error;
 
-            this._runOnRejectHandlers();
+            if (this._onRejectQueue.length > 0)
+                this._runOnRejectHandlers();
+            else
+                this._cancelOnResolveHandlers();
         }
     }
 
@@ -101,15 +111,25 @@ class UnterPromise {
         if (typeof onResolve === "function") {
             this._onResolveQueue.push({ onResolveHandler: onResolve, unterPromise: newUnterPromis });
         }
-
+        
         if (typeof onReject === "function") {
             this._onRejectQueue.push({ onRejectHandler: onReject, unterPromise: newUnterPromis });
         }
 
         if(this._status === "fulfilled") this._runOnResolveHandlers();
-        if(this._status === "rejected") this._runOnRejectHandlers();
+                
+        if (this._status === "rejected") {
+            if (this._onRejectQueue.length > 0)
+                this._runOnRejectHandlers();
+            else
+                this._cancelOnResolveHandlers();
+        }
 
         return newUnterPromis;
+    }
+
+    catch(onReject) {
+        return this.then(undefined, onReject);       
     }
     
 }
