@@ -364,3 +364,27 @@ describe("Тесты метода .then", function() {
         });
     });    
 });
+
+describe("Тесты статических методов класса UnterPromise", function() {
+
+    it("Статический метод resolve возвращает промис, разрешенный с переданным в метод аргументом", function() {
+
+        let testValue = "foo";
+
+        UnterPromise.resolve(testValue)
+        .then(value => {
+            assert.equal(value, testValue);
+        });
+    });
+
+    it("Статический метод reject возвращает промис, отклоненный с переданным в метод аргументом", function() {
+
+        let testError = new Error("Тестовая ошибка!");
+
+        UnterPromise.reject(testError)
+        .then(null, error => {
+            assert.equal(error, testError);
+        });
+    });
+
+});
