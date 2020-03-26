@@ -1,4 +1,4 @@
-let TestingClass = UnterPromise;
+let TestingClass = Unterromise;
 
 describe(`Тесты конструктора класса ${TestingClass.name}`, function() {
 
@@ -738,4 +738,175 @@ describe(`Тесты статических методов класса ${Testin
         });
     });
 
+});
+
+describe.only(`Поддержка thenable объектов классом ${TestingClass.name}`, function() {
+
+    let testNumberError  = new Error("thenable объект вызвал отклонение промиса!");
+    let badThenableError = new Error("Ошибка метода .then  в thenable объекте!");
+    class ThenableNumberphile {
+        constructor(value) {
+            this.someValue = value;
+        }
+        then(resolve, reject) {
+            typeof this.someValue === "number"
+                ? resolve(this.someValue * 2)
+                : reject(testNumberError);
+        }
+    }
+
+    class BadThenable {
+        constructor() {}
+        then() { throw badThenableError; }
+    }
+
+    it("Если обработчик разрешения промиса возвращает объект у которого есть метод .then, следует вызвать этот метод и прередать ему в качастве аргументов функции разрешающие и отклоняющие промис, привязанный к этому обработчику", function(done) {
+        let testValue = 666;
+        let testError  = new Error("Тестовая ошибка!");
+        let wasRunned_1 = false;
+
+        let resolvedPromise = TestingClass.resolve(testValue);
+
+        resolvedPromise
+        .then(value => {
+            return new ThenableNumberphile(value);
+        })
+        .then(value => {
+            wasRunned_1  = true;
+            assert.equal(value, testValue * 2);
+        });
+
+        resolvedPromise
+        .then(() => {
+            return new ThenableNumberphile("не число");
+        })
+        .catch(error => {
+            assert.isTrue(wasRunned_1);
+            assert.equal(error, testNumberError);
+            done();
+        });
+    });
+
+    it("Если обработчик отклонения промиса возвращает объект у которого есть метод .then, следует вызвать этот метод и прередать ему в качастве аргументов функции разрешающие и отклоняющие промис, привязанный к этому обработчику", function(done) {
+        let testValue = 666;
+        let testError  = new Error("Тестовая ошибка!");
+        let wasRunned_1 = false;
+
+        let rejectedPromise = TestingClass.reject(testError);
+
+        rejectedPromise
+        .catch(() => {
+            return new ThenableNumberphile(testValue);
+        })
+        .then(value => {
+            wasRunned_1 = true;
+            assert.equal(value, testValue * 2);
+        });
+
+        rejectedPromise
+        .catch(() => {
+            return new ThenableNumberphile("не число");
+        })
+        .catch(error => {
+            assert.isTrue(wasRunned_1);
+            assert.equal(error, testNumberError);
+            done();
+        });
+    });
+
+    it("Если обработчик завершения промиса возвращает объект у которого есть метод .then, следует вызвать этот метод и прередать ему в качастве аргументов функции разрешающие и отклоняющие промис, привязанный к этому обработчику", function(done) {
+        let testValue = 666;
+        let testError  = new Error("Тестовая ошибка!");
+        let wasRunned_1 = wasRunned_2 = wasRunned_3 = false;
+
+        let resolvedPromise = TestingClass.resolve(testValue);        
+        let rejectedPromise = TestingClass.reject(testError);
+
+        resolvedPromise
+        .finally(() => {
+            return new ThenableNumberphile(testValue);
+        })
+        .then(value => {
+            wasRunned_1 = true;
+            assert.equal(value, testValue);
+        });
+
+        resolvedPromise
+        .finally(() => {
+            return new ThenableNumberphile("не число");
+        })
+        .catch(error => {
+            wasRunned_2 = true;
+            assert.equal(error, testNumberError);
+        });
+
+        rejectedPromise
+        .finally(() => {
+            return new ThenableNumberphile(testValue);
+        })
+        .catch(error => {
+            wasRunned_3 = true;
+            assert.equal(error, testError);
+        }); 
+
+        rejectedPromise
+        .finally(() => {
+            return new ThenableNumberphile("не число");
+        })
+        .catch(error => {
+            assert.isTrue(wasRunned_1);
+            assert.isTrue(wasRunned_2);
+            assert.isTrue(wasRunned_3);
+            assert.equal(error, testNumberError);
+            done();
+        });
+    });
+
+    it("Если обработчик разрешения, отклонения или завершения промиса возвращает объект у которого есть метод .then и он при исполнении выдает ошибку следует отклонить промис, привязанный к этому обработчику, со значением выданной ошибки", function(done) {
+        let testValue = 666;
+        let testError  = new Error("Тестовая ошибка!");
+        let wasRunned_1 = wasRunned_2 = wasRunned_3 = false;
+
+        let resolvedPromise = TestingClass.resolve(testValue);        
+        let rejectedPromise = TestingClass.reject(testError);
+
+        resolvedPromise
+        .then(() => {
+            return new BadThenable();
+        })
+        .catch(error => {
+            wasRunned_1 = true;
+            assert.equal(error, badThenableError);
+        });
+
+        resolvedPromise
+        .finally(() => {
+            return new BadThenable();
+        })
+        .catch(error => {
+            wasRunned_2 = true;
+            assert.equal(error, badThenableError);
+        });
+
+        rejectedPromise
+        .catch(() => {
+            return new BadThenable();
+        })
+        .catch(error => {
+            wasRunned_3 = true;
+            assert.equal(error, badThenableError);
+        });
+
+        rejectedPromise
+        .finally(() => {
+            return new BadThenable();
+        })
+        .catch(error => {
+            assert.isTrue(wasRunned_1);
+            assert.isTrue(wasRunned_2);
+            assert.isTrue(wasRunned_3);
+            assert.equal(error, badThenableError);
+            done();
+        });
+    });
 });
