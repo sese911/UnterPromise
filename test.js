@@ -1,6 +1,6 @@
-let TestingClass = Unterromise;
+let TestingClass = UnterPromise;
 
-describe(`Тесты конструктора класса ${TestingClass.name}`, function() {
+describe.only(`Тесты конструктора класса ${TestingClass.name}`, function() {
 
     it("Конструктор в качестве аргумента принимает функцию, иначе выбрасываем TypeError", function() {
         let testError;
@@ -61,6 +61,18 @@ describe(`Тесты конструктора класса ${TestingClass.name}`
             done();
         });
 
+    });
+
+    it("Если экзекьютор при выполнении выдает ошибку, промис должен быть отклонен со значением этой ошибки", function(done) {
+        let testError = new Error("Тестовая ошибка!");
+
+        new TestingClass((resolve, reject) => {
+            throw testError;
+        })
+        .catch(error => {
+            assert.equal(error, testError);
+            done();
+        });
     });
 });
 
