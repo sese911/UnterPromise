@@ -23,7 +23,12 @@ class UnterPromise {
         this._onFinallyQueue = [];
 
         if (typeof executor === "function") {
-            executor(value => this._resolve(value), error => this._reject(error));
+            try {
+                executor(value => this._resolve(value), error => this._reject(error));
+            }
+            catch (error) {
+                this._reject(error);
+            }
         }
         else {
             throw TypeError(`UnterPromise executor ${typeof executor} is not a function`);
