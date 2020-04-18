@@ -63,6 +63,16 @@ class UnterPromise {
                     () => resolveHandlerObj.unterPromise._resolve(returnValue._result),
                     () => resolveHandlerObj.unterPromise._reject(returnValue._result)
                 );
+            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+                try {
+                    returnValue.then(
+                    value => resolveHandlerObj.unterPromise._resolve(value),
+                    error => resolveHandlerObj.unterPromise._reject(error)
+                    );
+                }
+                catch(error){
+                    resolveHandlerObj.unterPromise._reject(error);
+                }
             } else {
                 resolveHandlerObj.unterPromise._resolve(returnValue);
             }
@@ -108,6 +118,16 @@ class UnterPromise {
                     () => rejectHandlerObj.unterPromise._resolve(returnValue._result),
                     () => rejectHandlerObj.unterPromise._reject(returnValue._result)
                 );
+            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+                try {
+                    returnValue.then(
+                    value => rejectHandlerObj.unterPromise._resolve(value),
+                    error => rejectHandlerObj.unterPromise._reject(error)
+                    );
+                }
+                catch(error) {
+                    rejectHandlerObj.unterPromise._reject(error);
+                }                
             } else {
                 rejectHandlerObj.unterPromise._resolve(returnValue);
             }
@@ -140,6 +160,24 @@ class UnterPromise {
                         finallyHandlerObj.unterPromise._reject(returnValue._result);
                     }
                 );
+            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+                try {
+                    returnValue.then(
+                        value => {
+                            if (this._status === "fulfilled") {
+                                finallyHandlerObj.unterPromise._resolve(value);
+                            } else {
+                                finallyHandlerObj.unterPromise._reject(value);
+                            }
+                        },
+                        error => {
+                            finallyHandlerObj.unterPromise._reject(error);
+                        }
+                    );
+                }   
+                catch(error) {
+                    finallyHandlerObj.unterPromise._reject(error);
+                }            
             } else {
                 if (this._status === "fulfilled") {
                     finallyHandlerObj.unterPromise._resolve(this._result);
