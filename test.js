@@ -1,6 +1,6 @@
 let TestingClass = UnterPromise;
 
-describe.only(`Тесты конструктора класса ${TestingClass.name}`, function() {
+describe(`Тесты конструктора класса ${TestingClass.name}`, function() {
 
     it("Конструктор в качестве аргумента принимает функцию, иначе выбрасываем TypeError", function() {
         let testError;
@@ -752,7 +752,7 @@ describe(`Тесты статических методов класса ${Testin
 
 });
 
-describe.only(`Поддержка thenable объектов классом ${TestingClass.name}`, function() {
+describe(`Поддержка thenable объектов классом ${TestingClass.name}`, function() {
 
     let testNumberError  = new Error("thenable объект вызвал отклонение промиса!");
     let badThenableError = new Error("Ошибка метода .then  в thenable объекте!");

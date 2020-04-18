@@ -25,8 +25,7 @@ class UnterPromise {
         if (typeof executor === "function") {
             try {
                 executor(value => this._resolve(value), error => this._reject(error));
-            }
-            catch (error) {
+            } catch (error) {
                 this._reject(error);
             }
         }
@@ -63,7 +62,8 @@ class UnterPromise {
                     () => resolveHandlerObj.unterPromise._resolve(returnValue._result),
                     () => resolveHandlerObj.unterPromise._reject(returnValue._result)
                 );
-            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+            }
+            else if (returnValue !== undefined && typeof returnValue.then === "function") {
                 try {
                     returnValue.then(
                     value => resolveHandlerObj.unterPromise._resolve(value),
@@ -73,7 +73,8 @@ class UnterPromise {
                 catch(error){
                     resolveHandlerObj.unterPromise._reject(error);
                 }
-            } else {
+            }
+            else {
                 resolveHandlerObj.unterPromise._resolve(returnValue);
             }
         }
@@ -91,10 +92,11 @@ class UnterPromise {
             this._status = "rejected";
             this._result = error;
 
-            if (this._onRejectQueue.length > 0)
+            if (this._onRejectQueue.length > 0) {
                 this._runOnRejectHandlers();
-            else
+            } else {
                 this._cancelOnResolveHandlers();
+            }
 
             this._runOnFinallyHandlers();    
         }
@@ -118,7 +120,8 @@ class UnterPromise {
                     () => rejectHandlerObj.unterPromise._resolve(returnValue._result),
                     () => rejectHandlerObj.unterPromise._reject(returnValue._result)
                 );
-            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+            }
+            else if (returnValue !== undefined && typeof returnValue.then === "function") {
                 try {
                     returnValue.then(
                     value => rejectHandlerObj.unterPromise._resolve(value),
@@ -128,7 +131,8 @@ class UnterPromise {
                 catch(error) {
                     rejectHandlerObj.unterPromise._reject(error);
                 }                
-            } else {
+            }
+            else {
                 rejectHandlerObj.unterPromise._resolve(returnValue);
             }
         }
@@ -160,7 +164,8 @@ class UnterPromise {
                         finallyHandlerObj.unterPromise._reject(returnValue._result);
                     }
                 );
-            } else if (returnValue !== undefined && typeof returnValue.then === "function") {
+            }
+            else if (returnValue !== undefined && typeof returnValue.then === "function") {
                 try {
                     returnValue.then(
                         value => {
@@ -178,7 +183,8 @@ class UnterPromise {
                 catch(error) {
                     finallyHandlerObj.unterPromise._reject(error);
                 }            
-            } else {
+            }
+            else {
                 if (this._status === "fulfilled") {
                     finallyHandlerObj.unterPromise._resolve(this._result);
                 } else {
@@ -199,13 +205,15 @@ class UnterPromise {
             this._onRejectQueue.push({ onRejectHandler: onReject, unterPromise: newUnterPromis });
         }
 
-        if(this._status === "fulfilled") this._runOnResolveHandlers();
-                
-        if (this._status === "rejected") {
-            if (this._onRejectQueue.length > 0)
+        if(this._status === "fulfilled") {
+            this._runOnResolveHandlers();
+        }                
+        else if (this._status === "rejected") {
+            if (this._onRejectQueue.length > 0) {
                 this._runOnRejectHandlers();
-            else
+            } else {
                 this._cancelOnResolveHandlers();
+            }
         }
 
         return newUnterPromis;
@@ -222,7 +230,7 @@ class UnterPromise {
             this._onFinallyQueue.push({ onFinallyHandler: onFinally, unterPromise: newUnterPromis} );
         }
 
-        if (this._status !== "pending") this._runOnFinallyHandlers();
+        if (this._status !== "pending") { this._runOnFinallyHandlers(); }
 
         return newUnterPromis;
     }    
